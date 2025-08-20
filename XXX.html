@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Acceso para Adultos</title>
+  <style>
+    :root{
+      --bg:#000;
+      --card:#141414;
+      --muted:#bdbdbd;
+      --accent:#ff2e7e;
+      --accent-2:#ff6f61;
+      --border:#232323;
+      --success:#00d46a;
+      --warning:#ffb020;
+      --info:#60a5fa;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: 'Poppins',system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;
+      background: url('') no-repeat center/cover fixed;
+      color:#fff;
+      text-align:center;
+      background-color: rgba(0,0,0,.85);
+      background-blend-mode: darken;
+      min-height:100vh;
+    }
+
+    /* HERO */
+    .hero{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:32px}
+    .overlay{background: rgba(0,0,0,.6); padding:60px 40px; border-radius:16px; max-width:780px; width:100%; backdrop-filter: blur(6px); box-shadow:0 20px 60px rgba(0,0,0,.6); animation:fadeIn 1s ease}
+    .logo{font-size:48px; font-weight:900; letter-spacing:1.5px; margin-bottom:14px}
+    .logo span{color:var(--accent)}
+    .sub{color:#d0d0d0; line-height:1.6; margin:0 0 28px}
+    .btn{appearance:none; border:0; border-radius:48px; padding:16px 36px; background: linear-gradient(135deg,var(--accent),var(--accent-2)); color:white; font-weight:800; cursor:pointer; box-shadow:0 10px 24px rgba(255,46,126,.35); transition: transform .2s, box-shadow .2s}
+    .btn:hover{transform: translateY(-2px); box-shadow:0 16px 32px rgba(255,46,126,.5)}
+
+    /* APP LAYOUT */
+    #app{display:none; text-align:left; padding:24px 16px 80px; background:rgba(0,0,0,.9)}
+    .toolbar{display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:center; padding:8px 0 20px}
+    .select, .input, .btn-sm{background:#0e0e0e; color:#fff; border:1px solid var(--border); border-radius:10px; padding:10px 12px; font-size:14px}
+    .btn-sm{background: linear-gradient(135deg,var(--accent),var(--accent-2)); border:0; font-weight:700; cursor:pointer}
+
+    /* GRID & CARDS */
+    .country-section{margin:30px auto; max-width:1200px}
+    .country-header{display:flex; align-items:center; justify-content:space-between; padding:6px 6px 14px; border-bottom:1px solid var(--border); margin-bottom:16px}
+    .country-title{font-size:20px; opacity:.95}
+    .grid{display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:16px}
+    .card{background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.35); display:flex; flex-direction:column; transition: transform 0.3s ease, box-shadow 0.3s ease}
+    .card:hover{transform: translateY(-5px); box-shadow:0 15px 35px rgba(0,0,0,.5)}
+    .thumb-container{position:relative; overflow:hidden; width:100%; aspect-ratio:4/5}
+    .thumb{width:100%; height:100%; object-fit:cover; transition: transform 0.5s ease}
+    .badge-tag{position:absolute; top:8px; left:8px; background:rgba(0,0,0,.6); padding:6px 10px; border-radius:999px; font-size:12px; border:1px solid #ffffff22; backdrop-filter: blur(3px)}
+    .card:hover .thumb{transform: scale(1.05)}
+    .body{padding:12px}
+    .name{display:flex; align-items:center; justify-content:space-between; font-weight:800}
+    .meta{font-size:12px; color:var(--muted); margin-top:4px}
+    .price{margin-top:8px; font-weight:900; background:linear-gradient(135deg,var(--accent),var(--accent-2)); -webkit-background-clip:text; background-clip:text; color:transparent}
+    .actions{display:flex; gap:8px; margin:12px 0 6px}
+    .a-btn{flex:1; font-weight:800; border-radius:10px; padding:10px; border:1px solid var(--border); background:#0e0e0e; color:#fff; cursor:pointer; transition: all 0.2s ease}
+    .a-btn:hover{background:#1a1a1a}
+    .a-btn.primary{background: linear-gradient(135deg,var(--success),#34c759); border:0}
+    .a-btn.primary:hover{filter: brightness(1.1)}
+
+    /* ADMIN */
+    .admin-toggle{position:fixed; left:16px; bottom:16px; z-index:20}
+    .modal{position:fixed; inset:0; background:rgba(0,0,0,.7); display:none; align-items:center; justify-content:center; z-index:30}
+    .modal-card{background:#0f0f0f; border:1px solid var(--border); border-radius:18px; width:min(780px,92vw); padding:0; transform:scale(0.96); opacity:0; transition:all 0.25s ease; overflow:hidden}
+    .modal.show .modal-card{transform:scale(1); opacity:1}
+    .modal-head{padding:18px 22px; background:linear-gradient(135deg, #111, #0a0a0a); border-bottom:1px solid var(--border); position:relative}
+    .modal-head::after{content:""; position:absolute; inset:0; background: radial-gradient(600px 120px at 0% 0%, #ff2e7e22, transparent 50%), radial-gradient(600px 120px at 100% 0%, #ff6f6122, transparent 50%)}
+    .modal-title{margin:0; font-size:22px; font-weight:900; letter-spacing:.3px}
+    .modal-sub{margin:6px 0 0; color:#cfcfcf; font-size:13px}
+    .modal-body{padding:18px 18px 22px}
+    .row{display:grid; grid-template-columns:repeat(2,1fr); gap:10px}
+    .row-3{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
+    .full{grid-column:1/-1}
+    .danger{color:#ff9ba1; font-size:12px}
+    .hidden{display:none !important}
+    .helper{display:flex; gap:10px; align-items:flex-start; background:#0b1220; border:1px solid #1d2a44; padding:10px; border-radius:12px; color:#cfe0ff}
+    .helper b{color:#e3eeff}
+    .shake {animation: shake 0.5s linear}
+
+    @media (max-width:640px){
+      .row, .row-3{grid-template-columns:1fr}
+    }
+
+    /* ANIMATIONS */
+    @keyframes fadeIn{from{opacity:0; transform:translateY(12px)} to{opacity:1; transform:none}}
+    @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.06)}100%{transform:scale(1)}}
+    @keyframes shake { 0%, 100% {transform: translateX(0)} 10%, 30%, 50%, 70%, 90% {transform: translateX(-5px)} 20%, 40%, 60%, 80% {transform: translateX(5px)} }
+  </style>
+</head>
+<body>
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <div class="overlay">
+      <div class="logo">Clasifi<span>caditos</span></div>
+      <p class="sub">Este sitio es una comunidad para adultos que contiene material explícito.<br>Debes tener 18 años o más para entrar.</p>
+      <button class="btn" id="enterBtn">TENGO 18 AÑOS O MÁS - ENTRAR</button>
+    </div>
+  </section>
+
+  <!-- APP -->
+  <main id="app">
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <select id="countryFilter" class="select">
+        <option value="all">Todos los países</option>
+        <option value="mx">🇲🇽 México</option>
+        <option value="us">🇺🇸 Estados Unidos</option>
+        <option value="co">🇨🇴 Colombia</option>
+        <option value="es">🇪🇸 España</option>
+        <option value="ar">🇦🇷 Argentina</option>
+        <option value="br">🇧🇷 Brasil</option>
+        <option value="fr">🇫🇷 Francia</option>
+      </select>
+      <select id="langFilter" class="select">
+        <option value="all">Todos los idiomas</option>
+        <option value="es">Español</option>
+        <option value="en">Inglés</option>
+        <option value="pt">Portugués</option>
+        <option value="fr">Francés</option>
+      </select>
+      <select id="sortBy" class="select">
+        <option value="name">Ordenar: Nombre</option>
+        <option value="price">Ordenar: Precio</option>
+        <option value="age">Ordenar: Edad</option>
+        <option value="pop">Ordenar: Popularidad</option>
+      </select>
+    </div>
+
+    <!-- Country Sections render here -->
+    <div id="sections"></div>
+  </main>
+
+  <!-- ADMIN -->
+  <button class="btn-sm admin-toggle" id="adminOpen">🔒 Panel Admin</button>
+  <div class="modal" id="adminModal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3 class="modal-title">Panel de Administración</h3>
+        <p class="modal-sub">¡Bienvenido a Clasificaditos admin panel! <b>Aqui podrás agregar nuevos modelos editar y eliminar</b> </p>
+      </div>
+      <div class="modal-body">
+        <div class="helper full">
+          <div>ℹ️</div>
+          <div>
+            <b>¿Para qué sirve?</b><br>
+            Desde aquí puedes <b>crear fichas</b> (nombre, edad, país, idioma, precio y foto) que se muestran en la grilla. El botón abre via <b>WhatsApp</b> con un mensaje precargado y un <b>número de USA</b> de ejemplo.
+          </div>
+        </div>
+        <p class="danger">Solo para administradores, ingresa el PIN.</p>
+        <div id="adminGate" class="row full">
+          <input id="adminPin" class="input" type="password" placeholder="PIN de administrador (4 dígitos)" maxlength="4">
+          <button class="btn-sm" id="adminUnlock">Desbloquear</button>
+        </div>
+        <form id="adminForm" class="hidden" autocomplete="off">
+          <div class="row-3">
+            <input class="input" id="mName" placeholder="Nombre" required />
+            <input class="input" id="mAge" type="number" placeholder="Edad" min="18" required />
+            <input class="input" id="mPrice" type="number" placeholder="Precio USD" step="1" min="1" required />
+          </div>
+          <div class="row-3">
+            <select class="select" id="mCountry" required>
+              <option value="mx">México</option>
+              <option value="us">Estados Unidos</option>
+              <option value="co">Colombia</option>
+              <option value="es">España</option>
+              <option value="ar">Argentina</option>
+              <option value="br">Brasil</option>
+              <option value="fr">Francia</option>
+            </select>
+            <select class="select" id="mLang" required>
+              <option value="es">Español</option>
+              <option value="en">Inglés</option>
+              <option value="pt">Portugués</option>
+              <option value="fr">Francés</option>
+            </select>
+            <input class="input" id="mPhone" placeholder="WhatsApp USA (solo dígitos, ej. 15551234567)" />
+          </div>
+          <div class="row full">
+            <input class="input full" id="mBio" placeholder="Descripción corta" />
+          </div>
+          <div class="row full">
+            <input class="input" id="mImg" type="file" accept="image/*" />
+            <button class="btn-sm" type="submit">Agregar modelo</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- DATA ---
+    const COUNTRY = {
+      mx:{name:'México', flag:'🇲🇽'}, us:{name:'Estados Unidos', flag:'🇺🇸'}, co:{name:'Colombia', flag:'🇨🇴'}, es:{name:'España', flag:'🇪🇸'}, ar:{name:'Argentina', flag:'🇦🇷'}, br:{name:'Brasil', flag:'🇧🇷'}, fr:{name:'Francia', flag:'🇫🇷'}
+    };
+
+    // Nota: todos los números de WhatsApp son de USA ("gringos").
+    // Deben ir en formato E.164 sin signos: 1XXXXXXXXXX
+    let models = [
+      {id:'m1', name:'Mariana', age:22, country:'mx', lang:'es', price:8,  phone:'+1 (555) ***-3278', wa:'15553278111', pop:86, tag:'Nueva', bio:'Fitness y sesiones urbanas.', img:'https://randomuser.me/api/portraits/women/65.jpg'},
+      {id:'m2', name:'Emily',   age:25, country:'us', lang:'en', price:12, phone:'+1 (213) ***-8890', wa:'12138890123', pop:97, tag:'Top',   bio:'Retrato editorial y moda.', img:'https://randomuser.me/api/portraits/women/45.jpg'},
+      {id:'m3', name:'Carmen',  age:27, country:'es', lang:'es', price:10, phone:'+1 (332) ***-4421', wa:'13324421111', pop:74, tag:'⭐️',  bio:'Estilo clásico y minimal.', img:'https://randomuser.me/api/portraits/women/67.jpg'},
+      {id:'m4', name:'Fernanda',age:23, country:'mx', lang:'es', price:7,  phone:'+1 (646) ***-8890', wa:'16468890222', pop:65, tag:'Promo', bio:'Street y lifestyle.', img:'https://randomuser.me/api/portraits/women/68.jpg'},
+      {id:'m5', name:'Valentina',age:24,country:'ar', lang:'es', price:9,  phone:'+1 (408) ***-7781', wa:'14087781111', pop:71, tag:'🔥',   bio:'Vibes cinematográficas.', img:'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=600&q=60'},
+      {id:'m6', name:'Bruna',   age:26, country:'br', lang:'pt', price:11, phone:'+1 (415) ***-9912', wa:'14159912123', pop:79, tag:'Top',  bio:'Colores y ritmos latinos.', img:'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=600&q=60'},
+      {id:'m7', name:'Élodie',  age:28, country:'fr', lang:'fr', price:13, phone:'+1 (646) ***-6644', wa:'16466644123', pop:84, tag:'VIP',  bio:'Arte y luz natural.', img:'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&q=60'},
+      // Extra (más modelos y países)
+      {id:'m8', name:'Sofía',   age:22, country:'co', lang:'es', price:8,  phone:'+1 (929) ***-9988', wa:'19299988123', pop:77, tag:'Nueva', bio:'Retratos urbanos y fashion.', img:'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=600&q=60'},
+      {id:'m9', name:'Ana',     age:21, country:'mx', lang:'es', price:6,  phone:'+1 (747) ***-2201', wa:'17472201123', pop:88, tag:'Promo', bio:'Minimal y natural.', img:'https://images.unsplash.com/photo-1524504388940-b1c1722653e2?auto=format&fit=crop&w=600&q=60'},
+      {id:'m10',name:'Chloe',   age:29, country:'us', lang:'en', price:14, phone:'+1 (310) ***-9090', wa:'13109090123', pop:92, tag:'VIP',  bio:'Editorial y alta moda.', img:'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=600&q=60'},
+      {id:'m11',name:'Marta',   age:26, country:'es', lang:'es', price:11, phone:'+1 (657) ***-7345', wa:'16577345123', pop:69, tag:'⭐️',  bio:'Lifestyle con luz natural.', img:'https://images.unsplash.com/photo-1524504388940-b1c1722653e3?auto=format&fit=crop&w=600&q=60'},
+      {id:'m12',name:'Agustina',age:24, country:'ar', lang:'es', price:9,  phone:'+1 (702) ***-6612', wa:'17026612123', pop:73, tag:'🔥',   bio:'Cinemático y retro.', img:'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=60'},
+      {id:'m13',name:'Luana',   age:25, country:'br', lang:'pt', price:10, phone:'+1 (786) ***-4411', wa:'17864411123', pop:80, tag:'Top',  bio:'Colores fuertes y ritmo.', img:'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=600&q=60'},
+      {id:'m14',name:'Camille', age:27, country:'fr', lang:'fr', price:12, phone:'+1 (347) ***-8122', wa:'13478122123', pop:75, tag:'⭐️',  bio:'Moda y arte.', img:'https://images.unsplash.com/photo-1524504388940-b1c1722653e4?auto=format&fit=crop&w=600&q=60'},
+      {id:'m15',name:'Isabella',age:23, country:'us', lang:'en', price:10, phone:'+1 (206) ***-5577', wa:'12065577123', pop:83, tag:'Nueva', bio:'Outdoor & street.', img:'https://images.unsplash.com/photo-1520813792240-56fc4a3765a7?auto=format&fit=crop&w=600&q=60'},
+      {id:'m16',name:'Paula',   age:22, country:'co', lang:'es', price:7,  phone:'+1 (917) ***-0034', wa:'19170034123', pop:66, tag:'Promo', bio:'Retrato close-up.', img:'https://images.unsplash.com/photo-1524504388940-b1c1722653e5?auto=format&fit=crop&w=600&q=60'},
+      {id:'m17',name:'Lola',    age:28, country:'es', lang:'es', price:13, phone:'+1 (415) ***-4555', wa:'14154555123', pop:68, tag:'VIP',  bio:'Clásico y glam.', img:'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=60'},
+      {id:'m18',name:'Nina',    age:26, country:'fr', lang:'fr', price:11, phone:'+1 (404) ***-1122', wa:'14041122123', pop:72, tag:'⭐️',  bio:'Look editorial.', img:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=60'}
+    ];
+
+    const state = { 
+      country:'all', 
+      lang:'all', 
+      sort:'name', 
+      adminPin: '7894' // PIN de administración
+    };
+
+    // --- UI HELPERS ---
+    const el = s=>document.querySelector(s);
+    const money = n=>`$${n.toFixed(2)}`;
+
+    // HERO -> APP
+    el('#enterBtn').addEventListener('click', ()=>{
+      el('#hero').style.display='none';
+      el('#app').style.display='block';
+      render();
+    });
+
+    // Filters
+    el('#countryFilter').addEventListener('change', e=>{state.country=e.target.value; render();});
+    el('#langFilter').addEventListener('change', e=>{state.lang=e.target.value; render();});
+    el('#sortBy').addEventListener('change', e=>{state.sort=e.target.value; render();});
+
+    // ADMIN MODAL
+    const adminModal = el('#adminModal');
+    el('#adminOpen').addEventListener('click', ()=>{
+      adminModal.style.display='flex';
+      adminModal.setAttribute('aria-hidden','false');
+      setTimeout(() => adminModal.classList.add('show'), 10);
+    });
+
+    adminModal.addEventListener('click', (e)=>{
+      if(e.target===adminModal){ closeAdmin(); }
+    });
+
+    function closeAdmin(){
+      adminModal.classList.remove('show');
+      setTimeout(() => {
+        adminModal.style.display='none';
+        adminModal.setAttribute('aria-hidden','true');
+      }, 250);
+    }
+
+    el('#adminUnlock').addEventListener('click', ()=>{
+      const enteredPin = el('#adminPin').value;
+      if(enteredPin !== state.adminPin){
+        el('#adminPin').classList.add('shake');
+        setTimeout(() => el('#adminPin').classList.remove('shake'), 500);
+        alert('PIN incorrecto. Acceso denegado.');
+        return;
+      }
+      el('#adminGate').style.display='none';
+      el('#adminForm').classList.remove('hidden');
+    });
+
+    el('#adminForm').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const name = el('#mName').value.trim();
+      const age = parseInt(el('#mAge').value,10);
+      const price = parseFloat(el('#mPrice').value);
+      const country = el('#mCountry').value;
+      const lang = el('#mLang').value;
+      // Si no hay número, generamos uno válido de USA de ejemplo
+      const wa = (el('#mPhone').value.trim()||'1555000'+Math.floor(1000+Math.random()*8999));
+      const phone = `+1 (${wa.slice(1,4)}) ***-${wa.slice(-4)}`;
+      const bio = el('#mBio').value.trim();
+      const file = el('#mImg').files[0];
+
+      if(!name || !age || age<18 || !price || !country || !lang){
+        alert('Completa todos los campos obligatorios (edad mínima 18).');
+        return;
+      }
+
+      const id = 'm'+(Date.now());
+      const addModel = (img)=>{
+        const pop = Math.floor(60+Math.random()*40);
+        const tag = ['Nueva','Top','VIP','🔥','⭐️','Promo'][Math.floor(Math.random()*6)];
+        models.push({id,name,age,country,lang,price,phone,wa,bio,img,pop,tag});
+        render();
+        closeAdmin();
+        el('#adminForm').reset();
+        el('#adminGate').style.display='grid';
+        el('#adminForm').classList.add('hidden');
+        el('#adminPin').value = ''; // Limpiar PIN después de usar
+      };
+
+      if(file){
+        const reader = new FileReader();
+        reader.onload = ev=> addModel(ev.target.result);
+        reader.readAsDataURL(file);
+      } else {
+        addModel('https://picsum.photos/400/500?blur=2');
+      }
+    });
+
+    // Render models grouped by country
+    function render(){
+      const container = document.querySelector('#sections');
+      container.innerHTML='';
+      // Filter + sort
+      let list = models.filter(m=> (state.country==='all'||m.country===state.country) && (state.lang==='all'||m.lang===state.lang));
+      list.sort((a,b)=>{
+        if(state.sort==='price') return a.price-b.price;
+        if(state.sort==='age') return a.age-b.age;
+        if(state.sort==='pop') return b.pop-a.pop;
+        return a.name.localeCompare(b.name);
+      });
+      // Group by country
+      const groups = {};
+      list.forEach(m=>{ (groups[m.country] ||= []).push(m); });
+
+      const countries = Object.keys(groups);
+      if(!countries.length){
+        const empty = document.createElement('p');
+        empty.style.color = '#bbb';
+        empty.textContent='No hay modelos para los filtros seleccionados.';
+        container.appendChild(empty);
+        return;
+      }
+
+      countries.forEach(code=>{
+        const sec = document.createElement('section');
+        sec.className='country-section';
+        sec.innerHTML = `
+          <div class="country-header">
+            <div class="country-title">${COUNTRY[code].flag} ${COUNTRY[code].name}</div>
+            <div class="muted">${groups[code].length} modelos</div>
+          </div>
+          <div class="grid"></div>`;
+        const grid = sec.querySelector('.grid');
+        groups[code].forEach(m=> grid.appendChild(card(m)) );
+        container.appendChild(sec);
+      });
+    }
+
+    function card(m){
+      const c = document.createElement('article');
+      c.className='card';
+      const waUrl = `https://wa.me/${m.wa}?text=${encodeURIComponent('Hola '+m.name+', te escribo desde Clasificaditos. ¿Disponibilidad y tarifas?')}`;
+      c.innerHTML = `
+        <div class="thumb-container">
+          <span class="badge-tag">${m.tag||''}</span>
+          <img class='thumb' src='${m.img}' alt='${m.name}'>
+        </div>
+        <div class='body'>
+          <div class='name'>
+            <span>${m.name}, ${m.age}</span>
+            <span class='price'>${money(m.price)}</span>
+          </div>
+          <div class='meta'>${COUNTRY[m.country].flag} ${COUNTRY[m.country].name} • Idioma: ${m.lang.toUpperCase()} • Popularidad: ${m.pop||70}</div>
+          <div class='meta'>${m.bio||''}</div>
+          <div class='actions'>
+            <button class='a-btn' onclick="revealPhone(this, '${m.phone}')">Mostrar número</button>
+            <a class='a-btn primary' href='${waUrl}' target='_blank' rel='noopener noreferrer'>Contactar por WhatsApp</a>
+          </div>
+        </div>`;
+      return c;
+    }
+
+    window.revealPhone = function(btn, phone){
+      btn.textContent = phone + ' (demo)';
+      btn.disabled = true;
+      btn.style.opacity = .85;
+    }
+  </script>
+</body>
+</html>
